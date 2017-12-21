@@ -377,8 +377,8 @@ print("Root mean squared error for test: %.2f" % math.sqrt(mean_squared_error(Y_
 
 
 #4th model, combine scaled numeric and labelencoded cat features
-combined_train = pd.concat([pd.DataFrame(X_train_scale), pd.DataFrame(onehotlabels_train)], axis=1)
-combined_test = pd.concat([pd.DataFrame(X_test_scale), pd.DataFrame(onehotlabels_test)], axis=1)
+combined_train = pd.concat([pd.DataFrame(X_train_scale), pd.DataFrame(onehotlabels_train)], axis=1, ignore_index = True)
+combined_test = pd.concat([pd.DataFrame(X_test_scale), pd.DataFrame(onehotlabels_test)], axis=1, ignore_index = True)
 
 alllm = linear_model.LinearRegression()
 alllm.fit(combined_train, Y_train)
@@ -452,6 +452,29 @@ print("Root mean squared error for test: %.2f" % math.sqrt(mean_squared_error(Y_
 
 
 #9th model, xgboost
+import xgboost as xg
+params = {'max_depth':3,
+'min_child_weight':10,
+'learning_rate':0.3,
+'subsample':0.5,
+'colsample_bytree':0.6,
+'obj':'reg:linear',
+'n_estimators':1000,
+'eta':0.3}
+
+
+dmatrix = xg.DMatrix(combined_train.values,
+                     Y_train.values)
+#feature_names=combined_train.columns.values
+xgboost = xg.train(params, dmatrix)
+xgboost_predict_train = xgboost.predict(combined_train)
+xgboost_predict_test = xgboost.predict(combined_test)
+print("Root mean squared error for train: %.2f" % math.sqrt(mean_squared_error(Y_train, xgboost_predict_train)))
+#Root mean squared error for train 751.03
+print("Root mean squared error for test: %.2f" % math.sqrt(mean_squared_error(Y_test, xgboost_predict_test)))
+#Root mean squared error for test: 918.41
+
+
 from xgboost import XGBRegressor
 import scipy.stats as st
 from sklearn.model_selection import RandomizedSearchCV
@@ -520,7 +543,7 @@ print("Root mean squared error for test: %.2f" % math.sqrt(mean_squared_error(Y_
 #Root mean squared error for test: 850.90
 
 
-#13th model, random forest
+#13th model, BayesianRidge
 from sklearn import linear_model
 BayesianRidge = linear_model.BayesianRidge()
 BayesianRidge.fit(combined_train, Y_train)
@@ -532,7 +555,40 @@ print("Root mean squared error for test: %.2f" % math.sqrt(mean_squared_error(Y_
 #Root mean squared error for test: 850.90
 
 
+#14th model, AdaBoost regression
+from sklearn.ensemble import AdaBoostRegressor
+Ada = AdaBoostRegressor()
+Ada.fit(combined_train, Y_train)
+Ada_predict_train = Ada.predict(combined_train)
+Ada_predict_test = Ada.predict(combined_test)
+print("Root mean squared error for train: %.2f" % math.sqrt(mean_squared_error(Y_train, Ada_predict_train)))
+#Root mean squared error for train 1131.57
+print("Root mean squared error for test: %.2f" % math.sqrt(mean_squared_error(Y_test, Ada_predict_test)))
+#Root mean squared error for test: 1133.58
 
+
+#15th model, Bagging regression
+from sklearn.ensemble import BaggingRegressor
+Bagging = BaggingRegressor()
+Bagging.fit(combined_train, Y_train)
+Bagging_predict_train = Bagging.predict(combined_train)
+Bagging_predict_test = Bagging.predict(combined_test)
+print("Root mean squared error for train: %.2f" % math.sqrt(mean_squared_error(Y_train, Bagging_predict_train)))
+#Root mean squared error for train 369.99
+print("Root mean squared error for test: %.2f" % math.sqrt(mean_squared_error(Y_test, Bagging_predict_test)))
+#Root mean squared error for test: 875.30
+
+
+#16th model, ExtraTrees regression
+from sklearn.ensemble import ExtraTreesRegressor
+ExtraTrees = ExtraTreesRegressor()
+ExtraTrees.fit(combined_train, Y_train)
+ExtraTrees_predict_train = ExtraTrees.predict(combined_train)
+ExtraTrees_predict_test = ExtraTrees.predict(combined_test)
+print("Root mean squared error for train: %.2f" % math.sqrt(mean_squared_error(Y_train, ExtraTrees_predict_train)))
+#Root mean squared error for train 2.99
+print("Root mean squared error for test: %.2f" % math.sqrt(mean_squared_error(Y_test, ExtraTrees_predict_test)))
+#Root mean squared error for test: 885.29
 
 
 
